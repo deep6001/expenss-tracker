@@ -1,3 +1,5 @@
+// Install recharts first: npm install recharts
+
 import React, { useEffect, useState } from "react";
 import {
   collection,
@@ -12,6 +14,7 @@ import { db } from "../config/firebase";
 import { addTranstion } from "../hooks/AddTransitction";
 import { getUserInfo } from "../hooks/UserInfo";
 import { DollarSign, PlusCircle, MinusCircle, Trash2 } from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 function Expenss() {
   const [transactions, setTransactions] = useState([]);
@@ -74,7 +77,8 @@ function Expenss() {
     };
 
     fetchTransactions();
-  }, [transactions]);
+    return () => unsubscribe && unsubscribe();
+  }, [uid]);
 
   const totalIncome = transactions
     .filter((transaction) => transaction.type === "income")
@@ -84,20 +88,19 @@ function Expenss() {
     .filter((transaction) => transaction.type === "expense")
     .reduce((acc, transaction) => acc + transaction.transactionAmount, 0);
 
-  const total = transactions.reduce(
-    (acc, transaction) =>
-      acc +
-      (transaction.type === "income"
-        ? transaction.transactionAmount
-        : -transaction.transactionAmount),
-    0
-  );
+  const total = totalIncome - totalExpenses;
+
+  const pieData = [
+    { name: "Income", value: totalIncome },
+    { name: "Expenses", value: totalExpenses },
+  ];
+
+  const COLORS = ["#22c55e", "#ef4444"];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
       <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <img
@@ -111,8 +114,7 @@ function Expenss() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Summary Cards */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-green-50 rounded-lg p-6 shadow-sm">
             <div className="flex items-center">
@@ -145,6 +147,27 @@ function Expenss() {
           </div>
         </div>
 
+        {/* Pie Chart */}
+        <div className="flex justify-center mb-8">
+          <PieChart width={500} height={300}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              label
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </div>
+
         {/* Add Transaction Form */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -165,7 +188,6 @@ function Expenss() {
               onChange={(e) => setAmount(e.target.value)}
               className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-            <label className="sr-only">Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
@@ -176,7 +198,7 @@ function Expenss() {
             </select>
             <button
               onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none"
             >
               Add Transaction
             </button>
