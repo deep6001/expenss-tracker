@@ -165,6 +165,7 @@ function Expenss() {
               onChange={(e) => setAmount(e.target.value)}
               className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <label className="sr-only">Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
@@ -219,6 +220,7 @@ function Expenss() {
                     </td>
                     <td className="px-6 py-4">
                       <button
+                        aria-label="Delete Transaction"
                         onClick={() => handleDelete(transaction.id)}
                         className="text-red-600 hover:text-red-800"
                       >
